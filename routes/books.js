@@ -1,20 +1,14 @@
 const express = require('express');
 const router = express.Router();
+const {
+    viewAllBooks, 
+    viewBook
+} = require('../controller/bookController');
 
 //view all books
-router.get('/', (req, res) => {
-    res.json('view all books');
-});
+router.get('/', viewAllBooks);
 
 //view book
-router.get('/:bookId', (req, res) => {
-    res.json('view book');
-});
-
-//view books by category
-router.get('/', (req, res) => {
-    // req.query.categoryId
-    res.json('view books by category');
-});
+router.get('/:bookId', viewBook);
 
 module.exports = router;
