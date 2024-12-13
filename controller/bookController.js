@@ -2,12 +2,22 @@ const conn = require('../mariadb');
 const {StatusCodes} = require('http-status-codes');
 
 const viewAllBooks = (req, res) => {
-    let {category_id} = req.query;
+    let {category_id, recent} = req.query;
 
-    if(category_id){
-        let sql = 'SELECT * FROM books WHERE category_id = ?';
+    let sql = 'SELECT * FROM books';
+    let values = [];
+    if(category_id && recent){
+        sql += ' WHERE category_id = ? AND pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()';
+        values = [category_id, recent];
+    } else if(category_id){
+        sql += ' WHERE category_id = ?';
+        values = category_id;
+    } else if(recent){
+        sql += ' WHERE pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()';
+        values = recent;
+    }
 
-        conn.query(sql, category_id, 
+    conn.query(sql, values, 
         (err, results) => {
             if(err){
                 console.log(err);
@@ -20,25 +30,14 @@ const viewAllBooks = (req, res) => {
                 return res.status(StatusCodes.NOT_FOUND).end();
             }
         });
-    } else {
-        let sql = 'SELECT * FROM books';
-
-        conn.query(sql, 
-        (err, results) => {
-            if(err){
-                console.log(err);
-                return res.status(StatusCodes.BAD_REQUEST).end();
-            }
-            return res.status(StatusCodes.CREATED).json(results);
-        });
-    }
 };
 
 const viewBook = (req, res) => {
     let {bookId} = req.params;
     bookId = parseInt(bookId);
 
-    let sql = 'SELECT * FROM books WHERE id = ?';
+    let sql = `SELECT * FROM books LEFT JOIN category 
+                ON books.category_id = category.id WHERE books.id = ?`;
 
     conn.query(sql, bookId, 
     (err, results) => {
