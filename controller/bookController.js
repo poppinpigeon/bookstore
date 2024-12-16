@@ -1,12 +1,13 @@
 const conn = require('../mariadb');
 const {StatusCodes} = require('http-status-codes');
 
+
 const viewAllBooks = (req, res) => {
     let {category_id, recent, limit, current_page} = req.query;
     limit = parseInt(limit);
     let offset = limit * (current_page-1);
 
-    let sql = 'SELECT * FROM books';
+    let sql = 'SELECT *, (SELECT count(*) FROM likes WHERE books.id = book_id) AS likes FROM books';
     let values = [];
     if(category_id && recent){
         sql += ' WHERE category_id = ? AND pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()';
@@ -37,13 +38,18 @@ const viewAllBooks = (req, res) => {
 };
 
 const viewBook = (req, res) => {
-    let {bookId} = req.params;
-    bookId = parseInt(bookId);
+    let {user_id} = req.body;
+    let {book_id} = req.params;
+    book_id = parseInt(book_id);
 
-    let sql = `SELECT * FROM books LEFT JOIN category 
-                ON books.category_id = category.id WHERE books.id = ?`;
+    let values = [user_id, book_id, book_id];
 
-    conn.query(sql, bookId, 
+    let sql = `SELECT *, (SELECT count(*) FROM likes WHERE books.id = book_id) AS likes,
+                (SELECT EXISTS (SELECT * FROM likes WHERE user_id = ? AND book_id = ?)) AS liked
+                FROM books LEFT JOIN category 
+                ON books.category_id = category.category_id WHERE books.id = ?`;
+
+    conn.query(sql, values, 
     (err, results) => {
         if(err){
             console.log(err);

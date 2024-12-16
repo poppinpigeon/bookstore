@@ -5,10 +5,12 @@ const {
     viewBook
 } = require('../controller/bookController');
 
+router.use(express.json());
+
 //view all books
 router.get('/', viewAllBooks);
 
 //view book
-router.get('/:bookId', viewBook);
+router.get('/:book_id', viewBook);
 
 module.exports = router;
