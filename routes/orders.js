@@ -1,21 +1,16 @@
+const {order, getOrders, getOrderDetail} = require('../controller/orderController');
 const express = require('express');
 const router = express.Router();
 
 router.use(express.json());
 
 //order
-router.post('/', (req, res) => {
-    res.json('order');
-});
+router.post('/', order);
 
 //view orders
-router.get('/', (req, res) => {
-    res.json('view orders');
-});
+router.get('/', getOrders);
 
 //view order details
-router.get('/:orderId', (req, res) => {
-    res.json('view order details');
-});
+router.get('/:order_id', getOrderDetail);
 
 module.exports = router;
