@@ -56,12 +56,44 @@ const deleteCartItems = async (conn, items) => {
     return result;
 }
 
-const getOrders = (req, res) => {
-    res.json('view orders');
+const getOrders = async (req, res) => {
+    const conn = await mariadb.createConnection({
+        host: '127.0.0.1',
+        user: process.env.DB_USER,
+        password: process.env.DB_PWD,
+        database: 'Bookstore',
+        port: process.env.DB_PORT,
+        dateStrings: true
+    });
+
+    let {user_id} = req.body;
+    user_id = parseInt(user_id);
+
+    let sql = `SELECT orders.id, created_at, address, recipient, contact, book_title, total_quantity, total_price
+                 FROM orders LEFT JOIN delivery ON orders.delivery_id = delivery.id WHERE user_id = ?`;
+    let [rows] = await conn.query(sql, [user_id]);
+
+    return res.status(StatusCodes.OK).json(rows);
 };
 
-const getOrderDetail = (req, res) => {
-    res.json('view order detail');
+const getOrderDetail = async (req, res) => {
+    const conn = await mariadb.createConnection({
+        host: '127.0.0.1',
+        user: process.env.DB_USER,
+        password: process.env.DB_PWD,
+        database: 'Bookstore',
+        port: process.env.DB_PORT,
+        dateStrings: true
+    });
+
+    let {order_id} = req.params;
+    order_id = parseInt(order_id);
+
+    let sql = `SELECT book_id, title, author, price, quantity FROM orderedBook 
+                LEFT JOIN books ON orderedBook.book_id = books.id 
+                WHERE order_id = ?`;
+    let [rows] = await conn.query(sql, [order_id]);
+    return res.status(StatusCodes.OK).json(rows);
 };
 
 module.exports = {
