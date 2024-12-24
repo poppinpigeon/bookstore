@@ -40,6 +40,7 @@ const login = (req, res) => {
             const hashPwd = crypto.pbkdf2Sync(pwd, loginUser.salt, 10000, 10, 'sha512').toString('base64');
             if(loginUser && loginUser.pwd === hashPwd){
                 const token = jwt.sign({
+                    id: loginUser.id,
                     email: loginUser.email
                 }, process.env.PRIVATE_KEY, {
                     expiresIn: '5m',
